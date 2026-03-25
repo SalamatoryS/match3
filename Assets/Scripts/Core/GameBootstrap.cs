@@ -7,17 +7,16 @@ public class GameBootstrap : MonoBehaviour
 
     private void Awake()
     {
-        // Инициализация пула
+        DontDestroyOnLoad(gameObject);
+
         ballPool.Init();
-        ServiceLocator.Register<BallPool>(ballPool);
+        ServiceLocator.Register(ballPool);
         
-        // Инициализация сохранений
         SaveService saveService = new SaveService();
         saveService.Init();
-        ServiceLocator.Register<SaveService>(saveService);
+        ServiceLocator.Register(saveService);
         
-        // Конфиг
-        ServiceLocator.Register<BallConfigSO>(ballConfig);
+        ServiceLocator.Register(ballConfig);
 
         Debug.Log("[Bootstrap] Game Initialized");
     }
