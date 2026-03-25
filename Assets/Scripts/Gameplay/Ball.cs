@@ -35,7 +35,7 @@ public class Ball : MonoBehaviour
     {
         _isExploding = true;
         
-        // Анимация взрыва через DOTween (ТЗ п.7)
+        // Анимация взрыва
         transform.DOScale(1.5f, 0.1f)
             .OnComplete(() =>
             {
@@ -49,8 +49,6 @@ public class Ball : MonoBehaviour
 
     public void ReturnToPool()
     {
-        // ВАЖНО: Обнуляем ссылку на сетку перед возвратом в пул!
-        // Иначе при следующей игре шарик будет ссылаться на уничтоженный Grid
         _grid = null; 
         
         BallPool pool = ServiceLocator.Get<BallPool>();
