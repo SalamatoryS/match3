@@ -42,7 +42,6 @@ public static class MatchFinder
         visited.Add(pos);
         matches.Add(ball);
 
-        // Рекурсивно проверяем всех 8 соседей
         foreach (var dir in _directions)
         {
             Vector2Int neighborPos = new Vector2Int(pos.x + dir.x, pos.y + dir.y);

@@ -5,9 +5,9 @@ public class GridConfigSO : ScriptableObject
 {
     [SerializeField] int gridSize = 8;
     [SerializeField] float cellSize = 1.2f;
-    [SerializeField] Vector2Int gridOffset = new Vector2Int(-4, -4);
+    [SerializeField] Vector2 gridOffset = new Vector2Int(-4, -4);
 
     public int GridSize => gridSize;
     public float CellSize => cellSize;
-    public Vector2Int GridOffset => gridOffset;
+    public Vector2 GridOffset => gridOffset;
 }

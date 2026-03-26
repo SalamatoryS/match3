@@ -4,31 +4,27 @@ using UnityEngine.SceneManagement;
 
 public class GameplayManager : MonoBehaviour
 {
-    // ✅ Константы вместо ScriptableObject (KISS principle)
-    const int MIN_MATCH_COUNT = 3;
-    const int MAX_BONUS_MOVES = 4;
-    const int MAX_SCORE_PER_MATCH = 30;
-    const int SCORE_MULTIPLIER = 10;
-    
     [SerializeField] Grid grid;
     [SerializeField] int startingMoves = 20;
-    
+
     int _score = 0;
     int _moves = 0;
     bool _isProcessing = false;
+    bool _isGameOver = false;
 
     void Start()
     {
         _moves = startingMoves;
-        
         if (grid != null)
             grid.Init(this);
-        
+
         GameEvents.OnScoreChanged += UpdateScoreUI;
         GameEvents.OnMovesChanged += UpdateMovesUI;
-        
+
         GameEvents.ScoreChanged(_score);
         GameEvents.MovesChanged(_moves);
+        
+        Invoke(nameof(ShowHint), 1f);
     }
 
     void OnDestroy()
@@ -37,32 +33,34 @@ public class GameplayManager : MonoBehaviour
         GameEvents.OnMovesChanged -= UpdateMovesUI;
     }
 
-    // Формула для бонусных ходов: 3=+2, 4=+3, 5+=+4
     int CalculateBonusMoves(int matchCount)
     {
-        if (matchCount < MIN_MATCH_COUNT) return 0;
-        return Mathf.Min(matchCount - 1, MAX_BONUS_MOVES);
+        if (matchCount < 3) return 0;
+        return Mathf.Min(matchCount - 1, 4);
     }
 
-    // Формула для очков: 3=10, 4=20, 5+=30
     int CalculateScore(int matchCount)
     {
-        if (matchCount < MIN_MATCH_COUNT) return 0;
-        return Mathf.Min((matchCount - 2) * SCORE_MULTIPLIER, MAX_SCORE_PER_MATCH);
+        if (matchCount < 3) return 0;
+        return Mathf.Min((matchCount - 2) * 10, 30);
     }
 
     public void ProcessMatch(List<Ball> matches)
     {
-        if (_isProcessing) return;
+        if (_isProcessing || _isGameOver) return;
         _isProcessing = true;
 
+        _moves--;
+        
         int matchCount = matches.Count;
-        int movesCost = 1;
         int bonusMoves = CalculateBonusMoves(matchCount);
         int points = CalculateScore(matchCount);
 
         _score += points;
-        _moves = _moves - movesCost + bonusMoves;
+        _moves += bonusMoves;
+
+        GameEvents.ScoreChanged(_score);
+        GameEvents.MovesChanged(_moves);
 
         int explodedCount = 0;
         foreach (Ball ball in matches)
@@ -75,48 +73,66 @@ public class GameplayManager : MonoBehaviour
 
                 if (explodedCount == matches.Count)
                 {
-                    if (grid != null) grid.RefillGrid();
-                    
-                    _isProcessing = false;
-                    
-                    if (_moves <= 0)
+                    if (grid != null)
                     {
-                        EndGame();
+                        grid.ShiftDownAndRefill(() =>
+                        {
+                            _isProcessing = false;
+                            CheckGameState();
+                        });
                     }
                     else
                     {
-                        GameEvents.ScoreChanged(_score);
-                        GameEvents.MovesChanged(_moves);
+                        _isProcessing = false;
+                        CheckGameState();
                     }
                 }
             });
         }
     }
 
-    void UpdateScoreUI(int score)
+    void CheckGameState()
     {
-        Debug.Log($"[UI] Score updated: {score}"); 
+        if (_moves <= 0)
+        {
+            EndGame();
+            return;
+        }
+
+        if (!grid.HasPossibleMoves())
+        {
+            EndGame();
+            return;
+        }
     }
 
-    void UpdateMovesUI(int moves)
+    void ShowHint()
     {
-        Debug.Log($"[UI] Moves updated: {moves}");
+        if (!_isGameOver && _isProcessing == false)
+        {
+            grid.HighlightHint();
+        }
     }
 
+    void UpdateScoreUI(int score) { /* Здесь можно подключить текстовое поле UI */ }
+    void UpdateMovesUI(int moves) { /* Здесь можно подключить текстовое поле UI */ }
 
     void EndGame()
     {
+        if (_isGameOver) return;
+        _isGameOver = true;
+
         SaveService saveService = ServiceLocator.Get<SaveService>();
         string date = System.DateTime.Now.ToString("dd.MM.yyyy");
         saveService.SaveRecord(date, _score);
-
-        GameEvents.GameEnded();
         
+        GameEvents.GameEnded();
+
         Invoke(nameof(LoadLeaderboard), 2f);
     }
 
     void LoadLeaderboard()
     {
-        SceneManager.LoadScene("2_Leaderboard");
+        SceneNavigator.Instance.LoadScene("2_Leaderboard");
     }
 }

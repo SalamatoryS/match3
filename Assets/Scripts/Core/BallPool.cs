@@ -37,7 +37,7 @@ public class BallPool : MonoBehaviour
         }
 
         GameObject newObj = Instantiate(ballPrefab, transform);
-        newObj.SetActive(true); // ← КРИТИЧНО: новый шар должен быть активен!
+        newObj.SetActive(true);
         return newObj;
     }
 
