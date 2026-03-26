@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridConfigSO
   gridSize: 8
   cellSize: 1.2
-  gridOffset: {x: -4, y: -4}
+  gridOffset: {x: -3.5, y: -3.5}
