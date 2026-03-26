@@ -93,8 +93,16 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    void UpdateScoreUI(int score) => GameEvents.ScoreChanged(score);
-    void UpdateMovesUI(int moves) => GameEvents.MovesChanged(moves);
+    void UpdateScoreUI(int score)
+    {
+        Debug.Log($"[UI] Score updated: {score}"); 
+    }
+
+    void UpdateMovesUI(int moves)
+    {
+        Debug.Log($"[UI] Moves updated: {moves}");
+    }
+
 
     void EndGame()
     {

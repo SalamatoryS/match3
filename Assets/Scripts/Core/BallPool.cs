@@ -10,6 +10,7 @@ public class BallPool : MonoBehaviour
 
     public void Init()
     {
+        DontDestroyOnLoad(gameObject);
         _poolStack = new Stack<GameObject>();
         
         for (int i = 0; i < initialSize; i++)
@@ -35,7 +36,9 @@ public class BallPool : MonoBehaviour
             return obj;
         }
 
-        return CreateNewBall();
+        GameObject newObj = Instantiate(ballPrefab, transform);
+        newObj.SetActive(true); // ← КРИТИЧНО: новый шар должен быть активен!
+        return newObj;
     }
 
     public void Return(GameObject obj)
