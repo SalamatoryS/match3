@@ -130,6 +130,7 @@ public class GameplayManager : MonoBehaviour
         }
         else
         {
+            Debug.Log("end game in manager");
             ShowSadMessage();
         }
     }

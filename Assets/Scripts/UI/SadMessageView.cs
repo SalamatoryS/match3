@@ -27,6 +27,7 @@ public class SadMessageView : MonoBehaviour
     
     void ShowSadMessage(int score)
     {
+        Debug.Log("End game in message");
         if (scoreText != null)
             scoreText.text = $"Your score: {score}";
         

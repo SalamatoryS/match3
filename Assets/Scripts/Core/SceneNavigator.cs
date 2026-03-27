@@ -35,8 +35,5 @@ public class SceneNavigator : MonoBehaviour
         }
     }
 
-    public void ExitGame()
-    {
-        Application.Quit();
-    }
+    public void ExitGame() => Application.Quit();
 }

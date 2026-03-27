@@ -1503,7 +1503,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameplayManager
   grid: {fileID: 1977379513}
-  startingMoves: 20
+  startingMoves: 5
 --- !u!4 &1705064092
 Transform:
   m_ObjectHideFlags: 0
@@ -1546,7 +1546,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92af2297c29037f47947e5e96aea0855, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SadMessageView
-  sadPanel: {fileID: 1165434456}
+  sadPanel: {fileID: 2093154937}
   scoreText: {fileID: 817969544}
   btnOK: {fileID: 1390971647}
 --- !u!1 &1799828495
