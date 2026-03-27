@@ -40,15 +40,16 @@ public class Grid : MonoBehaviour
     {
         if (isInputLocked || isPause) return;
 
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            HandleClick();
-        }
+        if (Input.GetMouseButtonDown(0))
+    {
+        HandleClick();
+    }
     }
 
     void HandleClick()
     {
-        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector3 mousePos = Input.mousePosition;
+    
         float distanceFromCamera = -mainCamera.transform.position.z;
         Vector3 screenPos = new Vector3(mousePos.x, mousePos.y, distanceFromCamera);
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(screenPos);
