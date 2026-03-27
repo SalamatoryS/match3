@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
+using DG.Tweening;
 
 public class SceneNavigator : MonoBehaviour
 {
@@ -19,20 +19,10 @@ public class SceneNavigator : MonoBehaviour
         }
     }
 
-    public void LoadScene(string sceneName)
+    public async void LoadScene(string sceneName)
     {
-        StartCoroutine(LoadSceneAsync(sceneName));
-    }
-
-    IEnumerator LoadSceneAsync(string sceneName)
-    {
-        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
-        operation.allowSceneActivation = true;
-
-        while (!operation.isDone)
-        {
-            yield return null;
-        }
+        DOTween.KillAll();
+        await SceneManager.LoadSceneAsync(sceneName);
     }
 
     public void ExitGame() => Application.Quit();

@@ -6,12 +6,12 @@ public class BallPool : MonoBehaviour
     [SerializeField] GameObject ballPrefab;
     [SerializeField] int initialSize = 25;
     
-    Stack<GameObject> _poolStack;
+    Stack<GameObject> poolStack;
 
     public void Init()
     {
         DontDestroyOnLoad(gameObject);
-        _poolStack = new Stack<GameObject>();
+        poolStack = new Stack<GameObject>();
         
         for (int i = 0; i < initialSize; i++)
         {
@@ -23,15 +23,15 @@ public class BallPool : MonoBehaviour
     {
         GameObject obj = Instantiate(ballPrefab, transform);
         obj.SetActive(false);
-        _poolStack.Push(obj);
+        poolStack.Push(obj);
         return obj;
     }
 
     public GameObject Get()
     {
-        if (_poolStack.Count > 0)
+        if (poolStack.Count > 0)
         {
-            GameObject obj = _poolStack.Pop();
+            GameObject obj = poolStack.Pop();
             obj.SetActive(true);
             return obj;
         }
@@ -44,6 +44,6 @@ public class BallPool : MonoBehaviour
     public void Return(GameObject obj)
     {
         obj.SetActive(false);
-        _poolStack.Push(obj);
+        poolStack.Push(obj);
     }
 }
