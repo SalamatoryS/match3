@@ -14,6 +14,7 @@ public class Grid : MonoBehaviour
     BallPool _pool;
     Camera _mainCamera;
     bool _isInputLocked = false;
+    bool isPause = false;
     float epsilon = 0.01f; // Минимальная погрешность
 
     public void Init(GameplayManager manager)
@@ -30,11 +31,14 @@ public class Grid : MonoBehaviour
         if (_pool == null) return;
 
         GenerateGrid();
+
+        GameEvents.OnPauseRequested += OnPause;
+        GameEvents.OnResumeRequested += OnResume;
     }
 
     private void Update()
     {
-        if (_isInputLocked) return;
+        if (_isInputLocked || isPause) return;
 
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
@@ -254,5 +258,15 @@ public class Grid : MonoBehaviour
                 }
             }
         }
+    }
+
+    void OnPause() => isPause = true;
+    
+    void OnResume() => isPause = false;
+
+    void OnDestroy()
+    {
+        GameEvents.OnPauseRequested -= OnPause;
+        GameEvents.OnResumeRequested -= OnResume;
     }
 }

@@ -31,6 +31,8 @@ public class PauseManager : MonoBehaviour
         _isPaused = true;
         pausePanel.SetActive(true);
         Time.timeScale = 0f;
+
+        GameEvents.RequestPause();
     }
     
     void OnResumeClicked()
@@ -40,6 +42,8 @@ public class PauseManager : MonoBehaviour
         _isPaused = false;
         pausePanel.SetActive(false);
         Time.timeScale = 1f;
+        
+        GameEvents.RequestResume();
     }
     
     void OnToMenuClicked()

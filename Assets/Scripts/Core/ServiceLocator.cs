@@ -1,19 +1,24 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public static class ServiceLocator
 {
-    static readonly Dictionary<System.Type, object> _services = new();
+    static readonly Dictionary<System.Type, object> services = new();
 
     public static void Register<T>(T service)
     {
-        _services[typeof(T)] = service;
+        Type type = typeof(T);
+
+        if(services.ContainsKey(type)) return;
+
+        services[type] = service;
         Debug.Log($"[ServiceLocator] Registered: {typeof(T).Name}");
     }
 
     public static T Get<T>()
     {
-        if (_services.TryGetValue(typeof(T), out var service))
+        if (services.TryGetValue(typeof(T), out var service))
         {
             return (T)service;
         }

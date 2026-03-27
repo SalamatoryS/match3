@@ -5,8 +5,17 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] BallConfigSO ballConfig;
     [SerializeField] BallPool ballPool;
 
+    static bool isInitialized = false;
+
     private void Awake()
     {
+        if (isInitialized)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        isInitialized = true;
         DontDestroyOnLoad(gameObject);
 
         ballPool.Init();
