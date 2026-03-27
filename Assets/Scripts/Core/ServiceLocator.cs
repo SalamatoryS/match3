@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class ServiceLocator
 {
-    static readonly Dictionary<System.Type, object> services = new();
+    static readonly Dictionary<Type, object> services = new();
 
     public static void Register<T>(T service)
     {

@@ -7,7 +7,7 @@ public class PauseManager : MonoBehaviour
     [SerializeField] Button btnResume;
     [SerializeField] Button btnToMenu;
     
-    bool _isPaused = false;
+    bool isPaused = false;
     
     void Awake()
     {
@@ -26,9 +26,9 @@ public class PauseManager : MonoBehaviour
     
     public void RequestPause()
     {
-        if (_isPaused) return;
+        if (isPaused) return;
         
-        _isPaused = true;
+        isPaused = true;
         pausePanel.SetActive(true);
         Time.timeScale = 0f;
 
@@ -37,12 +37,12 @@ public class PauseManager : MonoBehaviour
     
     void OnResumeClicked()
     {
-        if (!_isPaused) return;
+        if (!isPaused) return;
         
-        _isPaused = false;
+        isPaused = false;
         pausePanel.SetActive(false);
         Time.timeScale = 1f;
-        
+
         GameEvents.RequestResume();
     }
     

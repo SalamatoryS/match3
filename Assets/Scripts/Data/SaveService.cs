@@ -6,7 +6,9 @@ public class SaveService
 {
     const string PlayerPrefsKey = "records_data";
     const string CsvPath = "Data/records";
-    List<Record> _records;
+    List<Record> records;
+
+    const int maxRecordsInLeadBoard = 10;
 
     public void Init()
     {
@@ -19,11 +21,11 @@ public class SaveService
 
         if (!string.IsNullOrEmpty(json))
         {
-            _records = JsonUtility.FromJson<RecordWrapper>(json).records;
+            records = JsonUtility.FromJson<RecordWrapper>(json).records;
         }
         else
         {
-            _records = LoadFromCsv();
+            records = LoadFromCsv();
             SaveRecords();
         }
     }
@@ -51,21 +53,46 @@ public class SaveService
 
     public void SaveRecord(string date, int score)
     {
-        _records.Add(new Record(date, score));
-        _records.Sort();
-        if (_records.Count > 10) _records.RemoveAt(_records.Count - 1);
+        records.Add(new Record(date, score));
+        records.Sort();
+        if (records.Count > maxRecordsInLeadBoard) records.RemoveAt(records.Count - 1);
         SaveRecords();
     }
 
     void SaveRecords()
     {
-        RecordWrapper wrapper = new RecordWrapper { records = _records };
+        RecordWrapper wrapper = new RecordWrapper { records = records };
         string json = JsonUtility.ToJson(wrapper);
         PlayerPrefs.SetString(PlayerPrefsKey, json);
         PlayerPrefs.Save();
     }
 
-    public List<Record> GetRecords() => _records;
+    public List<Record> GetRecords() => records;
+
+    public bool IsTopScore(int score)
+    {
+        if (records.Count < maxRecordsInLeadBoard) return true;
+        
+        List<Record> sorted = new List<Record>(records);
+        sorted.Sort();
+        
+        return score >= sorted[sorted.Count - 1].score;
+    }
+
+    public int GetScorePosition(int score)
+    {
+        List<Record> sorted = new List<Record>(records);
+        sorted.Sort();
+        
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            if (sorted[i].score <= score)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     // Вспомогательный класс для сериализации списка
     [System.Serializable]

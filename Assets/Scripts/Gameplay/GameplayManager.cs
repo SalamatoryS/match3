@@ -7,32 +7,25 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] Grid grid;
     [SerializeField] int startingMoves = 20;
 
-    int _score = 0;
-    int _moves = 0;
-    bool _isProcessing = false;
-    bool _isGameOver = false;
+    int score = 0;
+    int moves = 0;
+    bool isProcessing = false;
+    bool isGameOver = false;
 
     void Start()
     {
-        _moves = startingMoves;
+        moves = startingMoves;
         if (grid != null)
             grid.Init(this);
 
-        GameEvents.OnScoreChanged += UpdateScoreUI;
-        GameEvents.OnMovesChanged += UpdateMovesUI;
-
-        GameEvents.ScoreChanged(_score);
-        GameEvents.MovesChanged(_moves);
+        GameEvents.ScoreChanged(score);
+        GameEvents.MovesChanged(moves);
         
         Invoke(nameof(ShowHint), 1f);
     }
 
-    void OnDestroy()
-    {
-        GameEvents.OnScoreChanged -= UpdateScoreUI;
-        GameEvents.OnMovesChanged -= UpdateMovesUI;
-    }
-
+    //Тут я оставлю немного магических цифр которые нужно по конфигам и константам разносить
+    //для тестового задания это будет лишним, как мне кажется
     int CalculateBonusMoves(int matchCount)
     {
         if (matchCount < 3) return 0;
@@ -47,20 +40,20 @@ public class GameplayManager : MonoBehaviour
 
     public void ProcessMatch(List<Ball> matches)
     {
-        if (_isProcessing || _isGameOver) return;
-        _isProcessing = true;
+        if (isProcessing || isGameOver) return;
+        isProcessing = true;
 
-        _moves--;
+        moves--;
         
         int matchCount = matches.Count;
         int bonusMoves = CalculateBonusMoves(matchCount);
         int points = CalculateScore(matchCount);
 
-        _score += points;
-        _moves += bonusMoves;
+        score += points;
+        moves += bonusMoves;
 
-        GameEvents.ScoreChanged(_score);
-        GameEvents.MovesChanged(_moves);
+        GameEvents.ScoreChanged(score);
+        GameEvents.MovesChanged(moves);
 
         int explodedCount = 0;
         foreach (Ball ball in matches)
@@ -77,13 +70,13 @@ public class GameplayManager : MonoBehaviour
                     {
                         grid.ShiftDownAndRefill(() =>
                         {
-                            _isProcessing = false;
+                            isProcessing = false;
                             CheckGameState();
                         });
                     }
                     else
                     {
-                        _isProcessing = false;
+                        isProcessing = false;
                         CheckGameState();
                     }
                 }
@@ -93,7 +86,7 @@ public class GameplayManager : MonoBehaviour
 
     void CheckGameState()
     {
-        if (_moves <= 0)
+        if (moves <= 0)
         {
             EndGame();
             return;
@@ -108,31 +101,39 @@ public class GameplayManager : MonoBehaviour
 
     void ShowHint()
     {
-        if (!_isGameOver && _isProcessing == false)
+        if (!isGameOver && isProcessing == false)
         {
             grid.HighlightHint();
         }
     }
 
-    void UpdateScoreUI(int score) { /* Здесь можно подключить текстовое поле UI */ }
-    void UpdateMovesUI(int moves) { /* Здесь можно подключить текстовое поле UI */ }
-
     void EndGame()
     {
-        if (_isGameOver) return;
-        _isGameOver = true;
-
+        if (isGameOver) return;
+        isGameOver = true;
+        
         SaveService saveService = ServiceLocator.Get<SaveService>();
         string date = System.DateTime.Now.ToString("dd.MM.yyyy");
-        saveService.SaveRecord(date, _score);
+        
+        bool isTopScore = saveService.IsTopScore(score);
+        
+        saveService.SaveRecord(date, score);
+        
+        int position = saveService.GetScorePosition(score);
         
         GameEvents.GameEnded();
-
-        Invoke(nameof(LoadLeaderboard), 2f);
+        
+        if (isTopScore)
+        {
+            LeaderboardData.SetHighlightPosition(position);
+            LoadLeaderboard();
+        }
+        else
+        {
+            ShowSadMessage();
+        }
     }
 
-    void LoadLeaderboard()
-    {
-        SceneNavigator.Instance.LoadScene("2_Leaderboard");
-    }
+    void ShowSadMessage() => GameEvents.ShowSadMessage(score); 
+    void LoadLeaderboard() => SceneNavigator.Instance.LoadScene("2_Leaderboard");
 }

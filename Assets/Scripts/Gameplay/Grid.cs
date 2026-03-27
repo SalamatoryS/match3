@@ -8,27 +8,27 @@ public class Grid : MonoBehaviour
 {
     [SerializeField] GridConfigSO gridConfig;
     
-    GameplayManager _manager;
-    Ball[,] _grid;
-    Dictionary<Ball, Vector2Int> _ballPositions;
-    BallPool _pool;
-    Camera _mainCamera;
-    bool _isInputLocked = false;
+    GameplayManager manager;
+    Ball[,] grid;
+    Dictionary<Ball, Vector2Int> ballPositions;
+    BallPool pool;
+    Camera mainCamera;
+    bool isInputLocked = false;
     bool isPause = false;
     float epsilon = 0.01f; // Минимальная погрешность
 
     public void Init(GameplayManager manager)
     {
-        _manager = manager;
+        this.manager = manager;
         if (gridConfig == null) return;
 
-        _mainCamera = Camera.main;
+        mainCamera = Camera.main;
         int size = gridConfig.GridSize;
-        _grid = new Ball[size, size];
-        _ballPositions = new Dictionary<Ball, Vector2Int>();
+        grid = new Ball[size, size];
+        ballPositions = new Dictionary<Ball, Vector2Int>();
 
-        _pool = ServiceLocator.Get<BallPool>();
-        if (_pool == null) return;
+        pool = ServiceLocator.Get<BallPool>();
+        if (pool == null) return;
 
         GenerateGrid();
 
@@ -38,7 +38,7 @@ public class Grid : MonoBehaviour
 
     private void Update()
     {
-        if (_isInputLocked || isPause) return;
+        if (isInputLocked || isPause) return;
 
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
@@ -49,9 +49,9 @@ public class Grid : MonoBehaviour
     void HandleClick()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        float distanceFromCamera = -_mainCamera.transform.position.z;
+        float distanceFromCamera = -mainCamera.transform.position.z;
         Vector3 screenPos = new Vector3(mousePos.x, mousePos.y, distanceFromCamera);
-        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(screenPos);
+        Vector3 worldPos = mainCamera.ScreenToWorldPoint(screenPos);
         worldPos.z = 0f;
 
         Vector2Int gridPos = WorldToGridPosition(worldPos);
@@ -88,7 +88,7 @@ public class Grid : MonoBehaviour
 
     void CreateBallAtPosition(int x, int y, BallConfigSO colorConfig)
     {
-        GameObject obj = _pool.Get();
+        GameObject obj = pool.Get();
         Ball ball = obj.GetComponent<Ball>();
         ball.Init(colorConfig.GetRandomColor(), this);
 
@@ -100,8 +100,8 @@ public class Grid : MonoBehaviour
         
         obj.transform.position = worldPos;
         obj.transform.SetParent(transform);
-        _grid[x, y] = ball;
-        _ballPositions[ball] = new Vector2Int(x, y);
+        grid[x, y] = ball;
+        ballPositions[ball] = new Vector2Int(x, y);
     }
     
     Vector3 GetWorldPosition(int x, int y)
@@ -115,7 +115,7 @@ public class Grid : MonoBehaviour
 
     public void OnBallMatched(Ball ball)
     {
-        if (!_ballPositions.ContainsKey(ball)) return;
+        if (!ballPositions.ContainsKey(ball)) return;
         
         List<Ball> matches = MatchFinder.FindMatches(this, ball, out _);
 
@@ -125,21 +125,21 @@ public class Grid : MonoBehaviour
             matches.Add(ball);
         }
         
-        if (_manager != null)
+        if (manager != null)
         {
-            _manager.ProcessMatch(matches);
+            manager.ProcessMatch(matches);
         }
     }
 
     public Ball GetBallAtPosition(Vector2Int pos)
     {
-        if (IsValidPosition(pos)) return _grid[pos.x, pos.y];
+        if (IsValidPosition(pos)) return grid[pos.x, pos.y];
         return null;
     }
 
     public Vector2Int GetBallPosition(Ball ball)
     {
-        if (_ballPositions.TryGetValue(ball, out Vector2Int pos)) return pos;
+        if (ballPositions.TryGetValue(ball, out Vector2Int pos)) return pos;
         return new Vector2Int(-1, -1);
     }
 
@@ -151,10 +151,10 @@ public class Grid : MonoBehaviour
 
     public void RemoveBall(Ball ball)
     {
-        if (_ballPositions.TryGetValue(ball, out Vector2Int pos))
+        if (ballPositions.TryGetValue(ball, out Vector2Int pos))
         {
-            _grid[pos.x, pos.y] = null;
-            _ballPositions.Remove(ball);
+            grid[pos.x, pos.y] = null;
+            ballPositions.Remove(ball);
         }
     }
 
@@ -165,7 +165,7 @@ public class Grid : MonoBehaviour
 
     IEnumerator ShiftDownCoroutine(System.Action onComplete)
     {
-        _isInputLocked = true;
+        isInputLocked = true;
         int size = gridConfig.GridSize;
         BallConfigSO colorConfig = ServiceLocator.Get<BallConfigSO>();
 
@@ -174,15 +174,15 @@ public class Grid : MonoBehaviour
             int writeY = 0;
             for (int y = 0; y < size; y++)
             {
-                if (_grid[x, y] != null)
+                if (grid[x, y] != null)
                 {
                     if (y != writeY)
                     {
-                        _grid[x, writeY] = _grid[x, y];
-                        _grid[x, y] = null;
+                        grid[x, writeY] = grid[x, y];
+                        grid[x, y] = null;
                         
-                        Ball ball = _grid[x, writeY];
-                        _ballPositions[ball] = new Vector2Int(x, writeY);
+                        Ball ball = grid[x, writeY];
+                        ballPositions[ball] = new Vector2Int(x, writeY);
                         
                         Vector3 targetPos = GetWorldPosition(x, writeY);
                         ball.transform.DOMove(targetPos, 0.3f);
@@ -196,14 +196,14 @@ public class Grid : MonoBehaviour
         {
             for (int y = 0; y < size; y++)
             {
-                if (_grid[x, y] == null)
+                if (grid[x, y] == null)
                 {
-                    GameObject obj = _pool.Get();
+                    GameObject obj = pool.Get();
                     Ball ball = obj.GetComponent<Ball>();
                     ball.Init(colorConfig.GetRandomColor(), this);
                     
-                    _grid[x, y] = ball;
-                    _ballPositions[ball] = new Vector2Int(x, y);
+                    grid[x, y] = ball;
+                    ballPositions[ball] = new Vector2Int(x, y);
                     obj.transform.SetParent(transform);
 
                     Vector3 startPos = GetWorldPosition(x, y) + Vector3.up * 5f;
@@ -216,7 +216,7 @@ public class Grid : MonoBehaviour
         }
 
         yield return new WaitForSeconds(0.5f);
-        _isInputLocked = false;
+        isInputLocked = false;
         onComplete?.Invoke();
     }
 
@@ -227,9 +227,9 @@ public class Grid : MonoBehaviour
         {
             for (int y = 0; y < size; y++)
             {
-                if (_grid[x, y] != null)
+                if (grid[x, y] != null)
                 {
-                    List<Ball> matches = MatchFinder.FindMatches(this, _grid[x, y], out _);
+                    List<Ball> matches = MatchFinder.FindMatches(this, grid[x, y], out _);
                     if (matches.Count >= 3) return true;
                 }
             }
@@ -244,9 +244,9 @@ public class Grid : MonoBehaviour
         {
             for (int y = 0; y < size; y++)
             {
-                if (_grid[x, y] != null)
+                if (grid[x, y] != null)
                 {
-                    List<Ball> matches = MatchFinder.FindMatches(this, _grid[x, y], out _);
+                    List<Ball> matches = MatchFinder.FindMatches(this, grid[x, y], out _);
                     if (matches.Count >= 3)
                     {
                         foreach(var b in matches)
